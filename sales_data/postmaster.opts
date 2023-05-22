@@ -1,0 +1,1 @@
+C:/Users/chris/.conda/envs/retail_data/Library/bin/postgres.exe "-p" "5434" "-D" "sales_data"
