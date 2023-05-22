@@ -12,4 +12,4 @@
 
 - Task 1: Setup a new database to store the data. This is stored locally in the folder sales_data. The database is a postgres db.
 
-- Task 2:
+- Task 2: Initialise the three project classes - Data_Extraction.py, Database_Utils.py and Data_Cleaning.py
