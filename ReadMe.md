@@ -15,3 +15,5 @@
 - Task 2: Initialise the three project classes - Data_Extraction.py, Database_Utils.py and Data_Cleaning.py.
 
 - Task 3: The historical data of users is currently stored in an AWS database in the cloud. Create methods in your DataExtractor, DatabaseConnector and DataCleaning classes which help extract the information from an AWS RDS database. This should then be cleaned and uploaded to a local database, sales_data.
+
+- Task 4: The users card details are stored in a PDF document in an AWS S3 bucket. Create methods in DataExtractor and DataCleaning to retrieve the data, clean it up and upload to the sales_data database.
