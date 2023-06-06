@@ -1,4 +1,4 @@
-from data_extraction import DataExtractor as de
+from data_extraction import DataExtractor
 from database_utils import DatabaseConnector as dc
 import pandas as pd
 import numpy as np
@@ -127,11 +127,51 @@ class DataCleaning():
         # Set the index for the DataFrame
         df.set_index('card_number', inplace=True)
         return df
+    
+    '''
+    This method cleans up the data from a Pandas dataFrame containing Store data with a specific schema
+
+    df: Pandas Dataframe - The Dataframe that is going to be cleaned
+
+    returns: Pandas Dataframe - The cleaned DataFrame
+    '''
+    @staticmethod
+    def clean_store_data(df: pd.DataFrame) -> pd.DataFrame:
+        # Remove the rows with NULL values
+        df.replace('NULL', pd.NA, inplace=True)
+        df = df[df['store_code'].notna()]
+
+        # Remove all rows with an invalid country code
+        df = df.groupby('country_code').filter(lambda x: len(x) > 1)
+        # Update the country code data type to Category
+        df['country_code'] = df['country_code'].astype('category')
+
+        # Replace bad continent data
+        df['continent'] = np.where(df['continent'] == 'eeAmerica', 'America', df['continent'])
+        df['continent'] = np.where(df['continent'] == 'eeEurope', 'Europe', df['continent'])
+        df['continent'] = df['continent'].astype('category')
+
+        # Remove the lat column as not required as NULL data and latitude column is correct
+        df = df.drop(columns=['lat'])
+
+        # Remove invalid characters in staff numbers field
+        df['staff_numbers'] = df['staff_numbers'].str.replace('[^0-9]', '', regex=True)
+
+        # Format opening date data to be consistent
+        df = DataCleaning.clean_dates(df, 'opening_date')
+
+        # Set the index for the DataFrame
+        df.set_index('index', inplace=True)
+        return df
 
 if __name__ == "__main__":
     # Testing Methods
-    df = DataCleaning.clean_user_data(de.read_rds_table('legacy_users'))
+    df = DataCleaning.clean_user_data(DataExtractor.read_rds_table('legacy_users'))
     dc.upload_to_db(df, 'dim_users')
 
-    df = DataCleaning.clean_card_data(de.retrieve_pdf_data('https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf'))
+    df = DataCleaning.clean_card_data(DataExtractor.retrieve_pdf_data('https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf'))
     dc.upload_to_db(df, 'dim_card_details')
+
+    df = DataCleaning.clean_store_data(DataExtractor.retrieve_stores_data('https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/', {'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}))
+    dc.upload_to_db(df, 'dim_store_details')
+
