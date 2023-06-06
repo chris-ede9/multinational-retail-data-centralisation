@@ -67,7 +67,6 @@ class DatabaseConnector():
         # Connect to the database and upload the data to the specified table
         engine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}")
         with engine.connect() as conn:
-            df.set_index('index', inplace=True)
             df.to_sql(table_name, engine, if_exists='replace')
 
 if __name__ == "__main__":

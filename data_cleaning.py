@@ -9,7 +9,7 @@ class DataCleaning():
         pass
     
     '''
-    This method cleans up the data from a Pandas dataFrame
+    This method cleans up the data from a Pandas dataFrame containing User data with a specific schema
 
     df: Pandas Dataframe - The Dataframe that is going to be cleaned
 
@@ -40,9 +40,8 @@ class DataCleaning():
         # Format phone number to be consistent
         df = DataCleaning.clean_phone_numbers(df, 'phone_number')
 
-        # print(df.loc[df['index'] == 14514])
-        print(df.info())
-
+        # Set the index for the DataFrame
+        df.set_index('index', inplace=True)
         return df
     
     '''
@@ -77,7 +76,7 @@ class DataCleaning():
     @staticmethod
     def clean_phone_numbers(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
         # Remove all non-numeric characters
-        df[col_name] = df[col_name].str.replace(" ", "").str.replace("(", "").str.replace(")", "").str.replace(".", "").str.replace("-", "").str.replace("+", "")
+        df[col_name] = df[col_name].str.replace(" ", "", regex=True).str.replace("(", "", regex=True).str.replace(")", "", regex=True).str.replace(".", "", regex=True).str.replace("-", "", regex=True).str.replace("+", "", regex=True)
         # Remove all leading zeros in the phone number
         for i in range(1, 6):
             df[col_name] = np.where(df[col_name].str.startswith('0'), df[col_name].str[1:], df[col_name])
@@ -92,8 +91,47 @@ class DataCleaning():
         df[col_name] = np.where(df[col_name].str.startswith('+'), df[col_name], '+' + df[col_name])
 
         return df
+    
+    '''
+    This method cleans up the data from a Pandas dataFrame containing Card details data with a specific schema
+
+    df: Pandas Dataframe - The Dataframe that is going to be cleaned
+
+    returns: Pandas Dataframe - The cleaned DataFrame
+    '''
+    @staticmethod
+    def clean_card_data(df: pd.DataFrame) -> pd.DataFrame:
+        # Remove the rows with NULL values
+        df.replace('NULL', pd.NA, inplace=True)
+        df = df[df['card_number'].notna()]
+        # Remove the invalid question marks in the card number column
+        df['card_number'] = df['card_number'].replace('[?]', '', regex=True)
+        # Update the Card Number to be a str data type
+        df['card_number'] = df['card_number'].astype('str')
+
+        # Remove all rows with an invalid card provider
+        df = df.groupby('card_provider').filter(lambda x: len(x) > 1)
+        # Update the Card Provider data type to Category
+        df['card_provider'] = df['card_provider'].astype('category')
+        
+        # Add a column to calculate the length of the card number to check if they are valid
+        df['card_number_length'] = df['card_number'].str.len()
+        # remove all invalid card numbers where card numbers don't match the majority of cases per card provider
+        df = df.groupby(['card_provider', 'card_number_length']).filter(lambda x: len(x) > 3)
+        # Remove the length column
+        df = df.drop(columns=['card_number_length'])
+
+        # Format date payment confirmed data to be consistent
+        df = DataCleaning.clean_dates(df, 'date_payment_confirmed')
+
+        # Set the index for the DataFrame
+        df.set_index('card_number', inplace=True)
+        return df
 
 if __name__ == "__main__":
     # Testing Methods
     df = DataCleaning.clean_user_data(de.read_rds_table('legacy_users'))
     dc.upload_to_db(df, 'dim_users')
+
+    df = DataCleaning.clean_card_data(de.retrieve_pdf_data('https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf'))
+    dc.upload_to_db(df, 'dim_card_details')
