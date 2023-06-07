@@ -21,3 +21,5 @@
 - Task 5: The store data can be retrived through the use of an API. Create methods in DataExtractor and DataCleaning to retrieve the data, clean it up and upload to the sales_data database.
 
 - Task 6: The products data can be retrived by retroeving from an S3 bucket in AWS. Create methods in DataExtractor and DataCleaning to retrieve the data, clean it up, convert the weights into kg and upload to the sales_data database.
+
+- Task 7: The orders data is currently stored in an AWS database in the cloud. Create methods in your DatabaseConnector and DataCleaning classes which help extract the information from an AWS RDS database. This data will act as the single source of truth for all orders the company has made in the past.

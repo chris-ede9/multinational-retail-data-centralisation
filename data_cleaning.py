@@ -120,8 +120,6 @@ class DataCleaning():
         df = DataCleaning.clean_null_values(df, 'card_number')
         # Remove the invalid question marks in the card number column
         df['card_number'] = df['card_number'].replace('[?]', '', regex=True)
-        # Update the Card Number to be a str data type
-        df['card_number'] = df['card_number'].astype('str')
 
         # Remove all rows with an invalid card provider
         df = df.groupby('card_provider').filter(lambda x: len(x) > 1)
@@ -134,6 +132,9 @@ class DataCleaning():
         df = df.groupby(['card_provider', 'card_number_length']).filter(lambda x: len(x) > 3)
         # Remove the length column
         df = df.drop(columns=['card_number_length'])
+
+        # Update the Card Number to be a int64 data type
+        df['card_number'] = df['card_number'].astype('int64')
 
         # Format date payment confirmed data to be consistent
         df = DataCleaning.clean_dates(df, 'date_payment_confirmed')
@@ -241,9 +242,24 @@ class DataCleaning():
 
         return df
 
+    '''
+    This method cleans up the data from a Pandas dataFrame containing order data with a specific schema
+
+    df: Pandas Dataframe - The Dataframe that is going to be cleaned
+
+    returns: Pandas Dataframe - The cleaned DataFrame
+    '''
+    @staticmethod
+    def clean_orders_data(df: pd.DataFrame) -> pd.DataFrame:
+        # Remove the redundant columns
+        df = df.drop(columns=['level_0', 'first_name', 'last_name', '1'])
+
+        # Set the index for the DataFrame
+        df.set_index('index', inplace=True)
+        return df
+    
 if __name__ == "__main__":
     # Testing Methods
-
     df = DataCleaning.clean_user_data(DataExtractor.read_rds_table('legacy_users'))
     dc.upload_to_db(df, 'dim_users')
 
@@ -255,3 +271,6 @@ if __name__ == "__main__":
 
     df = DataCleaning.clean_products_data(DataExtractor.extract_from_s3('s3://data-handling-public/products.csv'))
     dc.upload_to_db(df, 'dim_products')
+
+    df = DataCleaning.clean_orders_data(DataExtractor.read_rds_table('orders_table'))
+    dc.upload_to_db(df, 'orders_table')
