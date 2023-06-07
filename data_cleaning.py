@@ -18,8 +18,7 @@ class DataCleaning():
     @staticmethod
     def clean_user_data(df: pd.DataFrame) -> pd.DataFrame:
         # Remove the rows with NULL values
-        df.replace('NULL', pd.NA, inplace=True)
-        df = df[df['first_name'].notna()]
+        df = DataCleaning.clean_null_values(df, 'first_name')
 
         # Remove all rows with an invalid email address
         df = df[df['email_address'].str.contains('@')]
@@ -42,6 +41,22 @@ class DataCleaning():
 
         # Set the index for the DataFrame
         df.set_index('index', inplace=True)
+        return df
+    
+    '''
+    This method removes all rows in a DataFrame that contain 'NULL' in a specified column
+
+    df: Pandas Dataframe - The Dataframe that is going to be cleaned
+    col_name: str - The column to check for NULL values
+
+    returns: Pandas Dataframe - DataFrame with cleaned date column
+    '''
+    @staticmethod
+    def clean_null_values(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
+        # Remove the rows with NULL values
+        df.replace('NULL', pd.NA, inplace=True)
+        df = df[df[col_name].notna()]
+
         return df
     
     '''
@@ -102,8 +117,7 @@ class DataCleaning():
     @staticmethod
     def clean_card_data(df: pd.DataFrame) -> pd.DataFrame:
         # Remove the rows with NULL values
-        df.replace('NULL', pd.NA, inplace=True)
-        df = df[df['card_number'].notna()]
+        df = DataCleaning.clean_null_values(df, 'card_number')
         # Remove the invalid question marks in the card number column
         df['card_number'] = df['card_number'].replace('[?]', '', regex=True)
         # Update the Card Number to be a str data type
@@ -138,8 +152,7 @@ class DataCleaning():
     @staticmethod
     def clean_store_data(df: pd.DataFrame) -> pd.DataFrame:
         # Remove the rows with NULL values
-        df.replace('NULL', pd.NA, inplace=True)
-        df = df[df['store_code'].notna()]
+        df = DataCleaning.clean_null_values(df, 'store_code')
 
         # Remove all rows with an invalid country code
         df = df.groupby('country_code').filter(lambda x: len(x) > 1)
@@ -163,9 +176,74 @@ class DataCleaning():
         # Set the index for the DataFrame
         df.set_index('index', inplace=True)
         return df
+    
+    '''
+    This method cleans up the data from a Pandas dataFrame containing products data with a specific schema
+
+    df: Pandas Dataframe - The Dataframe that is going to be cleaned
+
+    returns: Pandas Dataframe - The cleaned DataFrame
+    '''
+    @staticmethod
+    def clean_products_data(df: pd.DataFrame) -> pd.DataFrame:
+        # Rename the unnamed index column
+        df = df.rename(columns={'Unnamed: 0': 'index'})
+
+        # Remove the rows with NULL values
+        df = DataCleaning.clean_null_values(df, 'product_name')
+
+        # Remove all rows with an invalid category
+        df = df.groupby('category').filter(lambda x: len(x) > 1)
+        # Update the category data type to Category
+        df['category'] = df['category'].astype('category')
+
+        # Convert the weights to kg
+        df = DataCleaning.convert_product_weights(df)
+
+        # Format opening date data to be consistent
+        df = DataCleaning.clean_dates(df, 'date_added')
+
+        # Replace bad removed data
+        df['removed'] = np.where(df['removed'] == 'Still_avaliable', 'Still_available', df['removed'])
+        # Update the category data type to Category
+        df['removed'] = df['removed'].astype('category')
+
+        # Set the index for the DataFrame
+        df.set_index('index', inplace=True)
+        return df
+    
+    '''
+    This method converts all the weights to kg in the weight column
+
+    df: Pandas Dataframe - The Dataframe that is going to have the weight column converted to kg
+
+    returns: Pandas Dataframe - DataFrame with weight column all containing kg values
+    '''
+    @staticmethod
+    def convert_product_weights(df: pd.DataFrame) -> pd.DataFrame:
+        # Replace all ml values to g as 1:1 ratio
+        df['weight'] = df['weight'].replace('ml', 'g', regex=True)
+
+        # Create a new column to store the weight type
+        df['weight_type'] = np.where(df['weight'].str.contains('k') == True, 'kg', 'g')
+
+        # Remove the excess characters in the weight column
+        df['weight'] = df['weight'].str.replace('[^\\d.]', '', regex=True)
+        
+        # Update the weight data type to float
+        df['weight'] = df['weight'].astype('float')
+
+        # Convert all weights that are in grams to kg
+        df['weight'] = np.where(df['weight_type'] == 'g', df['weight'] / 1000, df['weight'])
+
+        # Remove the temp weight type column
+        df = df.drop(columns=['weight_type'])
+
+        return df
 
 if __name__ == "__main__":
     # Testing Methods
+
     df = DataCleaning.clean_user_data(DataExtractor.read_rds_table('legacy_users'))
     dc.upload_to_db(df, 'dim_users')
 
@@ -175,3 +253,5 @@ if __name__ == "__main__":
     df = DataCleaning.clean_store_data(DataExtractor.retrieve_stores_data('https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/', {'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}))
     dc.upload_to_db(df, 'dim_store_details')
 
+    df = DataCleaning.clean_products_data(DataExtractor.extract_from_s3('s3://data-handling-public/products.csv'))
+    dc.upload_to_db(df, 'dim_products')

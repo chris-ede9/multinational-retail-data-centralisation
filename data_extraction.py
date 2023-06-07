@@ -3,6 +3,8 @@ import pandas as pd
 from tabula.io import read_pdf
 from sqlalchemy import text
 import requests
+import boto3
+from io import StringIO
 
 # This Class extracts data from a data source and converts to a Pandas DataFrame
 class DataExtractor():
@@ -76,11 +78,41 @@ class DataExtractor():
         request = requests.get(url=endpoint + str(store_number), headers=header)
         df = pd.DataFrame([request.json()])
         return df
+    
+    '''
+    The method connects to an S3 bucket and retrieves a specified file
+
+    s3_file_path: str - The CSV file location of the S3 bucket
+    
+    returns: Pandas DataFrame - A DataFrame of table data
+    '''
+    @staticmethod
+    def extract_from_s3(s3_file_path: str) -> pd.DataFrame:
+        # Check if valid s3 address
+        if s3_file_path.startswith('s3://'):
+            # Remove the additional / in the URL
+            s3_file_path = s3_file_path.replace(":/", "")
+
+            # Split out the file path client, bucket name and file name from the file link
+            client = boto3.client(s3_file_path.split('/')[0])
+            bucket_name = s3_file_path.split('/')[1]
+            file_name = s3_file_path.split('/')[2]
+
+            # Extract the CSV data
+            csv_obj = client.get_object(Bucket=bucket_name, Key=file_name)
+            body = csv_obj['Body']
+            csv_string = body.read().decode('utf-8')
+
+            # Convert to a Pandas DataFrame
+            df = pd.read_csv(StringIO(csv_string))
+            return df
+        else:
+            print("Invalid S3 Bucket location entered")
+            return None
 
 if __name__ == "__main__":
     #Testing Methods
     print(DataExtractor.read_rds_table('legacy_users'))
     print(DataExtractor.retrieve_pdf_data('https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf'))
     print(DataExtractor.retrieve_stores_data('https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/', {'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}))
-    
-
+    print(DataExtractor.extract_from_s3('s3://data-handling-public/products.csv'))
