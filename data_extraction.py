@@ -110,6 +110,19 @@ class DataExtractor():
             print("Invalid S3 Bucket location entered")
             return None
 
+    '''
+    The method retrieves a JSON file stored on S3
+
+    s3_url_path: str - The JSON file location of the S3 bucket
+    
+    returns: Pandas DataFrame - A DataFrame of the json file
+    '''
+    @staticmethod
+    def retrieve_event_data(s3_url_path: str) -> pd.DataFrame:
+        request = requests.get(url=s3_url_path)
+        df = pd.DataFrame(request.json())
+        return df
+
 if __name__ == "__main__":
     #Testing Methods
     print(DataExtractor.read_rds_table('legacy_users'))
@@ -117,3 +130,4 @@ if __name__ == "__main__":
     print(DataExtractor.retrieve_stores_data('https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/', {'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}))
     print(DataExtractor.extract_from_s3('s3://data-handling-public/products.csv'))
     print(DataExtractor.read_rds_table('orders_table'))
+    print(DataExtractor.retrieve_event_data('https://data-handling-public.s3.eu-west-1.amazonaws.com/date_details.json'))

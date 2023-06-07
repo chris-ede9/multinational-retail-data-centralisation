@@ -258,8 +258,30 @@ class DataCleaning():
         df.set_index('index', inplace=True)
         return df
     
+    '''
+    This method cleans up the data from a Pandas dataFrame containing events data with a specific schema
+
+    df: Pandas Dataframe - The Dataframe that is going to be cleaned
+
+    returns: Pandas Dataframe - The cleaned DataFrame
+    '''
+    @staticmethod
+    def clean_events_data(df: pd.DataFrame) -> pd.DataFrame:
+        # Remove the rows with NULL values
+        df = DataCleaning.clean_null_values(df, 'date_uuid')
+
+        # Remove all rows with an invalid time period
+        df = df.groupby('time_period').filter(lambda x: len(x) > 1)
+        # Update the time period data type to Category
+        df['time_period'] = df['time_period'].astype('category')
+
+        # Set the index for the DataFrame
+        df.set_index('date_uuid', inplace=True)
+        return df
+    
 if __name__ == "__main__":
     # Testing Methods
+    
     df = DataCleaning.clean_user_data(DataExtractor.read_rds_table('legacy_users'))
     dc.upload_to_db(df, 'dim_users')
 
@@ -274,3 +296,6 @@ if __name__ == "__main__":
 
     df = DataCleaning.clean_orders_data(DataExtractor.read_rds_table('orders_table'))
     dc.upload_to_db(df, 'orders_table')
+    
+    df = DataCleaning.clean_events_data(DataExtractor.retrieve_event_data('https://data-handling-public.s3.eu-west-1.amazonaws.com/date_details.json'))
+    dc.upload_to_db(df, 'dim_date_times')
