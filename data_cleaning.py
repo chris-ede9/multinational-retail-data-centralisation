@@ -125,16 +125,6 @@ class DataCleaning():
         df = df.groupby('card_provider').filter(lambda x: len(x) > 1)
         # Update the Card Provider data type to Category
         df['card_provider'] = df['card_provider'].astype('category')
-        
-        # Add a column to calculate the length of the card number to check if they are valid
-        df['card_number_length'] = df['card_number'].str.len()
-        # remove all invalid card numbers where card numbers don't match the majority of cases per card provider
-        df = df.groupby(['card_provider', 'card_number_length']).filter(lambda x: len(x) > 3)
-        # Remove the length column
-        df = df.drop(columns=['card_number_length'])
-
-        # Update the Card Number to be a int64 data type
-        df['card_number'] = df['card_number'].astype('int64')
 
         # Format date payment confirmed data to be consistent
         df = DataCleaning.clean_dates(df, 'date_payment_confirmed')
@@ -154,6 +144,10 @@ class DataCleaning():
     def clean_store_data(df: pd.DataFrame) -> pd.DataFrame:
         # Remove the rows with NULL values
         df = DataCleaning.clean_null_values(df, 'store_code')
+
+        # Remove any N/A rows to NULL for location columns so they can be converted to float in future
+        df['longitude'].replace('N/A', pd.NA, inplace=True)
+        df['latitude'].replace('N/A', pd.NA, inplace=True)
 
         # Remove all rows with an invalid country code
         df = df.groupby('country_code').filter(lambda x: len(x) > 1)
@@ -252,10 +246,13 @@ class DataCleaning():
     @staticmethod
     def clean_orders_data(df: pd.DataFrame) -> pd.DataFrame:
         # Remove the redundant columns
-        df = df.drop(columns=['level_0', 'first_name', 'last_name', '1'])
+        df = df.drop(columns=['index', 'level_0', 'first_name', 'last_name', '1'])
+
+        # Update the data types for the columns
+        df['card_number'] = df['card_number'].astype('string')
 
         # Set the index for the DataFrame
-        df.set_index('index', inplace=True)
+        df.set_index(['date_uuid', 'user_uuid'], inplace=True)
         return df
     
     '''

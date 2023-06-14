@@ -62,7 +62,7 @@ class DataExtractor():
     def retrieve_stores_data(endpoint: str, header: str) -> pd.DataFrame:
         df = DataExtractor.retrieve_store_data(endpoint, header, 0)
         number_of_stores = DataExtractor.list_number_of_stores('https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores', header)
-        for i in range(1, (number_of_stores - 1)):
+        for i in range(1, number_of_stores):
             df = pd.concat([df, DataExtractor.retrieve_store_data(endpoint, header, i)], axis=0)
         return df
 

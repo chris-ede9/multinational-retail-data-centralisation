@@ -25,3 +25,25 @@
 - Task 7: The orders data is currently stored in an AWS database in the cloud. Create methods in your DatabaseConnector and DataCleaning classes which help extract the information from an AWS RDS database. This data will act as the single source of truth for all orders the company has made in the past.
 
 - Task 8: The events data is stored in a JSON file in an AWS S3 bucket. Create methods in DataExtractor and DataCleaning to retrieve the data, clean it up and upload to the sales_data database.
+
+## Milestone 3
+
+> Develop the star-based schema of the database, ensuring that the columns are of the correct data types.
+
+- Task 1: Cast the columns of the orders_table to the correct data types.
+
+- Task 2: Cast the columns of the dim_users table to the correct data types.
+
+- Task 3: Cast the columns of the dim_store_details table to the correct data types.
+
+- Task 4: In SQL create a weigh_class column in the dim_products table and populate based on the weight column.
+
+- Task 5: Cast the columns of the dim_products table to the correct data types.
+
+- Task 6: Cast the columns of the dim_date_times table to the correct data types.
+
+- Task 7: Cast the columns of the dim_card_details table to the correct data types.
+
+- Task 8: Create the primary keys in the dimensions tables.
+
+- Task 9: Finalising the star-based schema and adding the foreign keys to the orders table.
