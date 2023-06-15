@@ -30,6 +30,8 @@
 
 > Develop the star-based schema of the database, ensuring that the columns are of the correct data types.
 
+> All SQL code for the tasks can be found in the sales_data\schema_setup folder
+
 - Task 1: Cast the columns of the orders_table to the correct data types.
 
 - Task 2: Cast the columns of the dim_users table to the correct data types.
@@ -47,3 +49,27 @@
 - Task 8: Create the primary keys in the dimensions tables.
 
 - Task 9: Finalising the star-based schema and adding the foreign keys to the orders table.
+
+## Milestone 4
+
+> Querying the data. Write business led queries that benefit the business in making informed data-led decisions.
+
+> All data queries for the tasks can be found in the sales_data\data_queries folder
+
+- Task 1: How many stores does the business have and in which countries?
+
+- Task 2: Which locations currently have the most stores?
+
+- Task 3: Which months produce the average highest cost of sales typically?
+
+- Task 4: How many sales are coming from online?
+
+- Task 5: What percentage of sales come through each type of store?
+
+- Task 6: Which month in each year produced the highest cost of sales?
+
+- Task 7: What is our staff headcount?
+
+- Task 8: Which German store type is selling the most?
+
+- Task 9: How quickly is the company making sales?

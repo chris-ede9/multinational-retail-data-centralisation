@@ -62,7 +62,7 @@ class DatabaseConnector():
         USER = 'postgres'
         PASSWORD = 'aicore'
         DATABASE = 'sales_data'
-        PORT = 5434
+        PORT = 5432
         
         # Connect to the database and upload the data to the specified table
         engine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}")
