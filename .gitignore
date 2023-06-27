@@ -1,2 +1,6 @@
+aws/
 sales_data/pg_stat_tmp/
 sales_data/pg_stat_tmp/global.stat
+db_creds.yaml
+logfile
+

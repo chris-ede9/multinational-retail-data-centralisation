@@ -1,4 +1,11 @@
 ---
+LOCAL_DATABASE_TYPE: postgresql
+LOCAL_DBAPI: 'psycopg2'
+LOCAL_HOST: localhost
+LOCAL_USER: postgres
+LOCAL_PASSWORD: aicore
+LOCAL_DATABASE: sales_data
+LOCAL_PORT: 5432
 RDS_HOST: data-handling-project-readonly.cq2e8zno855e.eu-west-1.rds.amazonaws.com
 RDS_PASSWORD: AiCore2022
 RDS_USER: aicore_admin

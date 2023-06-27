@@ -6,17 +6,7 @@
 
 > Database Setup:
 
-- Ensure a local Postgresql instance has been initialised with the following attributes:
-
-    - DATABASE_TYPE = 'postgresql'
-    - DBAPI = 'psycopg2'
-    - HOST = 'localhost'
-    - USER = 'postgres'
-    - PASSWORD = 'aicore'
-    - DATABASE = 'sales_data'
-    - PORT = 5432
-
-- If any of these attributes require changing, please update in the database_utils.py file.
+- Ensure a local Postgresql instance has been initialised with the attributes in the db_creds_local.yaml file in the root directory.
 
 > Running the Python application to populate the sales_data database:
 

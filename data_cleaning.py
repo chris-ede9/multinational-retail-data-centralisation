@@ -1,24 +1,25 @@
-from data_extraction import DataExtractor
-from database_utils import DatabaseConnector as dc
 import pandas as pd
 import numpy as np
+from data_extraction import DataExtractor
+from database_utils import DatabaseConnector
 
 # This Class cleans up the data in a specified Pandas DataFrame
 class DataCleaning():
     def __init__(self) -> None:
         pass
     
-    '''
-    This method cleans up the data from a Pandas dataFrame containing User data with a specific schema
-
-    df: Pandas Dataframe - The Dataframe that is going to be cleaned
-
-    returns: Pandas Dataframe - The cleaned DataFrame
-    '''
     @staticmethod
     def clean_user_data(df: pd.DataFrame) -> pd.DataFrame:
+        '''
+        This method cleans up the data from a Pandas dataFrame containing User data with a specific schema
+
+        df: Pandas Dataframe - The Dataframe that is going to be cleaned
+
+        returns: Pandas Dataframe - The cleaned DataFrame
+        '''
+
         # Remove the rows with NULL values
-        df = DataCleaning.clean_null_values(df, 'first_name')
+        df = DataCleaning._clean_null_values(df, 'first_name')
 
         # Remove all rows with an invalid email address
         df = df[df['email_address'].str.contains('@')]
@@ -31,44 +32,46 @@ class DataCleaning():
         df['country_code'] = df['country_code'].astype('category')
 
         # Format date of birth data to be consistent
-        df = DataCleaning.clean_dates(df, 'date_of_birth')
+        df = DataCleaning._clean_dates(df, 'date_of_birth')
 
         # Format join date data to be consistent
-        df = DataCleaning.clean_dates(df, 'join_date')
+        df = DataCleaning._clean_dates(df, 'join_date')
 
         # Format phone number to be consistent
-        df = DataCleaning.clean_phone_numbers(df, 'phone_number')
+        df = DataCleaning._clean_phone_numbers(df, 'phone_number')
 
         # Set the index for the DataFrame
         df.set_index('index', inplace=True)
         return df
     
-    '''
-    This method removes all rows in a DataFrame that contain 'NULL' in a specified column
-
-    df: Pandas Dataframe - The Dataframe that is going to be cleaned
-    col_name: str - The column to check for NULL values
-
-    returns: Pandas Dataframe - DataFrame with cleaned date column
-    '''
     @staticmethod
-    def clean_null_values(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
+    def _clean_null_values(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
+        '''
+        This method removes all rows in a DataFrame that contain 'NULL' in a specified column
+
+        df: Pandas Dataframe - The Dataframe that is going to be cleaned
+        col_name: str - The column to check for NULL values
+
+        returns: Pandas Dataframe - DataFrame with cleaned date column
+        '''
+
         # Remove the rows with NULL values
         df.replace('NULL', pd.NA, inplace=True)
         df = df[df[col_name].notna()]
 
         return df
     
-    '''
-    This method cleans up a specifed date column in a Pandas DataFrame
-
-    df: Pandas Dataframe - The Dataframe that is going to be cleaned
-    col_name: str - The date column name
-
-    returns: Pandas Dataframe - DataFrame with cleaned date column
-    '''
     @staticmethod
-    def clean_dates(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
+    def _clean_dates(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
+        '''
+        This method cleans up a specifed date column in a Pandas DataFrame
+
+        df: Pandas Dataframe - The Dataframe that is going to be cleaned
+        col_name: str - The date column name
+
+        returns: Pandas Dataframe - DataFrame with cleaned date column
+        '''
+
         # Get all the different date formats in the column
         date1 = pd.to_datetime(df[col_name], errors='coerce', format="%Y-%m-%d")
         date2 = pd.to_datetime(df[col_name], errors='coerce', format="%B %Y %d")
@@ -80,16 +83,17 @@ class DataCleaning():
 
         return df
     
-    '''
-    This method cleans up a specifed phone number column in a Pandas DataFrame
-
-    df: Pandas Dataframe - The Dataframe that is going to be cleaned
-    col_name: str - The phone number column name
-
-    returns: Pandas Dataframe - DataFrame with cleaned phone number column
-    '''
     @staticmethod
-    def clean_phone_numbers(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
+    def _clean_phone_numbers(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
+        '''
+        This method cleans up a specifed phone number column in a Pandas DataFrame
+
+        df: Pandas Dataframe - The Dataframe that is going to be cleaned
+        col_name: str - The phone number column name
+
+        returns: Pandas Dataframe - DataFrame with cleaned phone number column
+        '''
+
         # Remove all non-numeric characters
         df[col_name] = df[col_name].str.replace(" ", "", regex=True).str.replace("(", "", regex=True).str.replace(")", "", regex=True).str.replace(".", "", regex=True).str.replace("-", "", regex=True).str.replace("+", "", regex=True)
         # Remove all leading zeros in the phone number
@@ -107,17 +111,18 @@ class DataCleaning():
 
         return df
     
-    '''
-    This method cleans up the data from a Pandas dataFrame containing Card details data with a specific schema
-
-    df: Pandas Dataframe - The Dataframe that is going to be cleaned
-
-    returns: Pandas Dataframe - The cleaned DataFrame
-    '''
     @staticmethod
     def clean_card_data(df: pd.DataFrame) -> pd.DataFrame:
+        '''
+        This method cleans up the data from a Pandas dataFrame containing Card details data with a specific schema
+
+        df: Pandas Dataframe - The Dataframe that is going to be cleaned
+
+        returns: Pandas Dataframe - The cleaned DataFrame
+        '''
+
         # Remove the rows with NULL values
-        df = DataCleaning.clean_null_values(df, 'card_number')
+        df = DataCleaning._clean_null_values(df, 'card_number')
         # Remove the invalid question marks in the card number column
         df['card_number'] = df['card_number'].replace('[?]', '', regex=True)
 
@@ -127,23 +132,24 @@ class DataCleaning():
         df['card_provider'] = df['card_provider'].astype('category')
 
         # Format date payment confirmed data to be consistent
-        df = DataCleaning.clean_dates(df, 'date_payment_confirmed')
+        df = DataCleaning._clean_dates(df, 'date_payment_confirmed')
 
         # Set the index for the DataFrame
         df.set_index('card_number', inplace=True)
         return df
     
-    '''
-    This method cleans up the data from a Pandas dataFrame containing Store data with a specific schema
-
-    df: Pandas Dataframe - The Dataframe that is going to be cleaned
-
-    returns: Pandas Dataframe - The cleaned DataFrame
-    '''
     @staticmethod
     def clean_store_data(df: pd.DataFrame) -> pd.DataFrame:
+        '''
+        This method cleans up the data from a Pandas dataFrame containing Store data with a specific schema
+
+        df: Pandas Dataframe - The Dataframe that is going to be cleaned
+
+        returns: Pandas Dataframe - The cleaned DataFrame
+        '''
+
         # Remove the rows with NULL values
-        df = DataCleaning.clean_null_values(df, 'store_code')
+        df = DataCleaning._clean_null_values(df, 'store_code')
 
         # Remove any N/A rows to NULL for location columns so they can be converted to float in future
         df['longitude'].replace('N/A', pd.NA, inplace=True)
@@ -166,26 +172,27 @@ class DataCleaning():
         df['staff_numbers'] = df['staff_numbers'].str.replace('[^0-9]', '', regex=True)
 
         # Format opening date data to be consistent
-        df = DataCleaning.clean_dates(df, 'opening_date')
+        df = DataCleaning._clean_dates(df, 'opening_date')
 
         # Set the index for the DataFrame
         df.set_index('index', inplace=True)
         return df
     
-    '''
-    This method cleans up the data from a Pandas dataFrame containing products data with a specific schema
-
-    df: Pandas Dataframe - The Dataframe that is going to be cleaned
-
-    returns: Pandas Dataframe - The cleaned DataFrame
-    '''
     @staticmethod
     def clean_products_data(df: pd.DataFrame) -> pd.DataFrame:
+        '''
+        This method cleans up the data from a Pandas dataFrame containing products data with a specific schema
+
+        df: Pandas Dataframe - The Dataframe that is going to be cleaned
+
+        returns: Pandas Dataframe - The cleaned DataFrame
+        '''
+
         # Rename the unnamed index column
         df = df.rename(columns={'Unnamed: 0': 'index'})
 
         # Remove the rows with NULL values
-        df = DataCleaning.clean_null_values(df, 'product_name')
+        df = DataCleaning._clean_null_values(df, 'product_name')
 
         # Remove all rows with an invalid category
         df = df.groupby('category').filter(lambda x: len(x) > 1)
@@ -196,7 +203,7 @@ class DataCleaning():
         df = DataCleaning.convert_product_weights(df)
 
         # Format opening date data to be consistent
-        df = DataCleaning.clean_dates(df, 'date_added')
+        df = DataCleaning._clean_dates(df, 'date_added')
 
         # Replace bad removed data
         df['removed'] = np.where(df['removed'] == 'Still_avaliable', 'Still_available', df['removed'])
@@ -207,44 +214,56 @@ class DataCleaning():
         df.set_index('index', inplace=True)
         return df
     
-    '''
-    This method converts all the weights to kg in the weight column
-
-    df: Pandas Dataframe - The Dataframe that is going to have the weight column converted to kg
-
-    returns: Pandas Dataframe - DataFrame with weight column all containing kg values
-    '''
     @staticmethod
     def convert_product_weights(df: pd.DataFrame) -> pd.DataFrame:
+        '''
+        This method converts all the weights to kg in the weight column
+
+        df: Pandas Dataframe - The Dataframe that is going to have the weight column converted to kg
+
+        returns: Pandas Dataframe - DataFrame with weight column all containing kg values
+        '''
+
         # Replace all ml values to g as 1:1 ratio
         df['weight'] = df['weight'].replace('ml', 'g', regex=True)
 
         # Create a new column to store the weight type
-        df['weight_type'] = np.where(df['weight'].str.contains('k') == True, 'kg', 'g')
+        df['weight_type'] = np.where(df['weight'].str.contains('kg') == True, 'kg', np.where(df['weight'].str.contains('oz') == True, 'oz', 'g'))
+
+        # Handle the values which contain multiples of the weights by storing the multipler to use later
+        df['weight_mult'] = np.where(df['weight'].str.contains('x') == True, df['weight'].str.split(' x ').str[0], 1)
+        df['weight'] = np.where(df['weight'].str.contains('x') == True, df['weight'].str.split(' x ').str[1], df['weight'] )
 
         # Remove the excess characters in the weight column
         df['weight'] = df['weight'].str.replace('[^\\d.]', '', regex=True)
         
-        # Update the weight data type to float
+        # Update the weight data types to float
+        df['weight_mult'] = df['weight_mult'].astype('int')
         df['weight'] = df['weight'].astype('float')
 
-        # Convert all weights that are in grams to kg
+        # Convert all weights that are in grams or ounces to kg
         df['weight'] = np.where(df['weight_type'] == 'g', df['weight'] / 1000, df['weight'])
+        df['weight'] = np.where(df['weight_type'] == 'oz', round(df['weight'] / 35.274, 3), df['weight'])
 
-        # Remove the temp weight type column
+        # Multipy the weights by the multiplier field
+        df['weight'] = round(df['weight'] * df['weight_mult'], 3)
+
+        # Remove the temp columns
         df = df.drop(columns=['weight_type'])
+        df = df.drop(columns=['weight_mult'])
 
         return df
 
-    '''
-    This method cleans up the data from a Pandas dataFrame containing order data with a specific schema
-
-    df: Pandas Dataframe - The Dataframe that is going to be cleaned
-
-    returns: Pandas Dataframe - The cleaned DataFrame
-    '''
     @staticmethod
     def clean_orders_data(df: pd.DataFrame) -> pd.DataFrame:
+        '''
+        This method cleans up the data from a Pandas dataFrame containing order data with a specific schema
+
+        df: Pandas Dataframe - The Dataframe that is going to be cleaned
+
+        returns: Pandas Dataframe - The cleaned DataFrame
+        '''
+
         # Remove the redundant columns
         df = df.drop(columns=['index', 'level_0', 'first_name', 'last_name', '1'])
 
@@ -255,17 +274,18 @@ class DataCleaning():
         df.set_index(['date_uuid', 'user_uuid'], inplace=True)
         return df
     
-    '''
-    This method cleans up the data from a Pandas dataFrame containing events data with a specific schema
-
-    df: Pandas Dataframe - The Dataframe that is going to be cleaned
-
-    returns: Pandas Dataframe - The cleaned DataFrame
-    '''
     @staticmethod
     def clean_events_data(df: pd.DataFrame) -> pd.DataFrame:
+        '''
+        This method cleans up the data from a Pandas dataFrame containing events data with a specific schema
+
+        df: Pandas Dataframe - The Dataframe that is going to be cleaned
+
+        returns: Pandas Dataframe - The cleaned DataFrame
+        '''
+        
         # Remove the rows with NULL values
-        df = DataCleaning.clean_null_values(df, 'date_uuid')
+        df = DataCleaning._clean_null_values(df, 'date_uuid')
 
         # Remove all rows with an invalid time period
         df = df.groupby('time_period').filter(lambda x: len(x) > 1)
@@ -279,6 +299,8 @@ class DataCleaning():
 if __name__ == "__main__":
     # Testing Methods
     
+    dc = DatabaseConnector()
+
     df = DataCleaning.clean_user_data(DataExtractor.read_rds_table('legacy_users'))
     dc.upload_to_db(df, 'dim_users')
 
